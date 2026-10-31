@@ -1,0 +1,49 @@
+# IoTextra SSR Small 3.02 + IoTbase NANO 3.06 + Waveshare ESP32-S3-Nano — GPIO mode (HOST AP0..AP7)
+# Source: IoTbase/NANO/v.3.06/host-map.yaml (esp32-s3-nano) + IoTextra-Digital/SSR Small/v.3.02/host-map.yaml
+# Outputs RL1..RL8: SSR, active-low on the HOST line (output on = 0)
+esphome:
+  name: ssr-small-nano-s3
+  project:
+    name: makethingshappy.iotextra-ssr-small-v3-02-iotbase-nano-v3-06-gpio
+    version: "1.01"
+
+esp32:
+  variant: esp32s3
+  flash_size: 16MB          # Waveshare ESP32-S3-Nano: 16 MB flash
+  framework:
+    type: esp-idf
+
+# The board also has 8 MB octal PSRAM; it is not needed here and is left off.
+
+logger:
+api:
+ota:
+  - platform: esphome
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  ap: {}
+captive_portal:
+web_server:
+  port: 80
+
+dashboard_import:
+  package_import_url: github://makethingshappy/MTH-for-ESPHome/Configs/IoTbase_NANO_Waveshare-ESP32-S3-NANO/iotextra-ssr-small-v3-02-iotbase-nano-v3-06-gpio.yaml@main
+  import_full_config: false
+
+# HOST I2C on IoTbase NANO: SDA = A4 = GPIO11, SCL = A5 = GPIO12
+i2c:
+  id: host_i2c
+  sda: GPIO11
+  scl: GPIO12
+  scan: true
+
+switch:
+  - {platform: gpio, id: rl1, name: "RL1", pin: {number: GPIO9, inverted: true}, restore_mode: ALWAYS_OFF}   # AP0 = D6, DO1
+  - {platform: gpio, id: rl2, name: "RL2", pin: {number: GPIO10, inverted: true}, restore_mode: ALWAYS_OFF}   # AP1 = D7, DO2
+  - {platform: gpio, id: rl3, name: "RL3", pin: {number: GPIO17, inverted: true}, restore_mode: ALWAYS_OFF}   # AP2 = D8, DO3
+  - {platform: gpio, id: rl4, name: "RL4", pin: {number: GPIO18, inverted: true}, restore_mode: ALWAYS_OFF}   # AP3 = D9, DO4
+  - {platform: gpio, id: rl5, name: "RL5", pin: {number: GPIO4, inverted: true}, restore_mode: ALWAYS_OFF}   # AP4 = A3, DO5
+  - {platform: gpio, id: rl6, name: "RL6", pin: {number: GPIO3, inverted: true}, restore_mode: ALWAYS_OFF}   # AP5 = A2, DO6 (strapping pin)
+  - {platform: gpio, id: rl7, name: "RL7", pin: {number: GPIO2, inverted: true}, restore_mode: ALWAYS_OFF}   # AP6 = A1, DO7
+  - {platform: gpio, id: rl8, name: "RL8", pin: {number: GPIO5, inverted: true}, restore_mode: ALWAYS_OFF}   # AP7 = D2, DO8

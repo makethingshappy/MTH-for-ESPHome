@@ -2,7 +2,6 @@
 # Source: IoTbase/NANO/v.3.06/host-map.yaml (esp32-s3-nano) + IoTextra-Digital/Relay2/v3.02/host-map.yaml
 # Outputs RL1..RL4: SPDT relays K1..K4, active-low on the HOST line (output on = 0)
 # AP4..AP7 not used by the module (TCA9534 P4..P7 only)
-# Status: not yet verified on hardware
 esphome:
   name: relay2-nano-s3
 

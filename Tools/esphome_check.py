@@ -4,7 +4,10 @@ Check an ESPHome GPIO config against the two host-map.yaml files it is built fro
 (module + carrier), and print the channel table for the devices.esphome.io page.
 
 Usage:
-  esphome_check.py MODULE_HOST_MAP CARRIER_HOST_MAP CONFIG.yaml [--table]
+  esphome_check.py MODULE_HOST_MAP CARRIER_HOST_MAP CONFIG.yaml [--board NAME] [--table]
+
+  --board NAME  for carriers whose host-map has a `boards:` section (IoTbase NANO,
+                IoTbase XIAO): the plug-in board to check against, e.g. esp32-s3-nano.
 
 Checks (exit code 1 on any ERROR):
   - every module channel with a HOST line exists in the config under the same name
@@ -46,12 +49,23 @@ def gpio_num(value):
 def main(argv):
     table = "--table" in argv
     args = [a for a in argv if a != "--table"]
+    board = None
+    if "--board" in args:
+        i = args.index("--board")
+        board = args[i + 1] if i + 1 < len(args) else None
+        del args[i:i + 2]
     if len(args) != 3:
         print(__doc__)
         return 2
     mod_path, car_path, cfg_path = args
     mod, car, cfg = load(mod_path), load(car_path), load(cfg_path)
     errors, notes = [], []
+    if "host" not in car:
+        boards = car.get("boards") or {}
+        if board not in boards:
+            print(f"carrier host-map has several boards, use --board with one of: {', '.join(boards)}")
+            return 2
+        car = dict(car, host=boards[board]["host"])
 
     host = {k: int(v) for k, v in car["host"].items() if re.fullmatch(r"AP\d", k)}
     channels = mod["channels"]

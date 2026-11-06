@@ -8,6 +8,8 @@ rest out and changes nothing else:
 
   * removed top-level blocks: api, ota, web_server, captive_portal, dashboard_import
   * wifi: credentials are removed, only an empty "ap:" is kept
+  * lines longer than 120 characters (the yamllint limit of devices.esphome.io)
+    get their trailing "# comment" moved to a comment line above
 
 Usage:
   make_hardware_config.py FULL.yaml [-o config.yaml] [--source-url URL]
@@ -19,6 +21,7 @@ import argparse
 import re
 import sys
 
+MAX_LEN = 120
 DROP = {"api", "ota", "web_server", "captive_portal", "dashboard_import"}
 HEADER_PREFIX = "# Hardware-only copy"
 TOP_KEY = re.compile(r"^([A-Za-z_][\w-]*):")
@@ -60,18 +63,36 @@ def derive(text, source_url=None):
         cleaned.pop(0)
     while cleaned and not cleaned[-1].strip():
         cleaned.pop()
+    cleaned = fit_width(cleaned)
     body = "\n".join(cleaned) + "\n"
     if source_url:
-        head = (f"{HEADER_PREFIX}. Full configuration (Wi-Fi, API, OTA, web server): "
-                f"{source_url}\n")
+        head = (f"{HEADER_PREFIX}. Full configuration (Wi-Fi, API, OTA, web server):\n"
+                f"# {source_url}\n")
         body = head + body
     return body
+
+
+def fit_width(lines):
+    """Move a trailing comment above its line when the line is longer than MAX_LEN."""
+    out = []
+    for line in lines:
+        if len(line) > MAX_LEN and not line.lstrip().startswith("#"):
+            m = re.match(r"^(.*?\S)\s+(#.*)$", line)
+            if m and "#" not in m.group(1).split('"')[0]:
+                indent = line[: len(line) - len(line.lstrip())]
+                out.append(f"{indent}{m.group(2)}")
+                out.append(m.group(1))
+                continue
+        out.append(line)
+    return out
 
 
 def strip_header(text):
     lines = text.splitlines(keepends=True)
     if lines and lines[0].startswith(HEADER_PREFIX):
         lines = lines[1:]
+        if lines and lines[0].startswith("# http"):
+            lines = lines[1:]
     return "".join(lines)
 
 

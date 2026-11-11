@@ -3,9 +3,11 @@
 # Inputs DI1..DI4: ISO1211, active-high on the HOST line (input active = 1)
 # Relays K1..K4 (terminals RS1..RS4): active-low on the HOST line (relay on = 0)
 # Requires SB6 closed (HOST AP4 -> K1). With SB5 closed AP4 is TCA9534 INT: K1 will not work.
-# Status: not yet verified on hardware
 esphome:
   name: octal4-nano-s3
+  project:
+    name: makethingshappy.iotextra-octal4-v3-02-iotbase-nano-v3-06-gpio
+    version: "1.01"
 
 esp32:
   variant: esp32s3
@@ -27,6 +29,10 @@ captive_portal:
 web_server:
   port: 80
 
+dashboard_import:
+  package_import_url: github://makethingshappy/MTH-for-ESPHome/Configs/IoTbase_NANO_Waveshare-ESP32-S3-NANO/iotextra-octal4-v3-02-iotbase-nano-v3-06-gpio.yaml@main
+  import_full_config: false
+
 # HOST I2C on IoTbase NANO: SDA = A4 = GPIO11, SCL = A5 = GPIO12
 i2c:
   id: host_i2c
@@ -35,13 +41,13 @@ i2c:
   scan: true
 
 binary_sensor:
-  - {platform: gpio, name: "DI1", pin: {number: GPIO9}}    # AP0 = D6
-  - {platform: gpio, name: "DI2", pin: {number: GPIO10}}    # AP1 = D7
-  - {platform: gpio, name: "DI3", pin: {number: GPIO17}}   # AP2 = D8
-  - {platform: gpio, name: "DI4", pin: {number: GPIO18}}   # AP3 = D9
+  - {platform: gpio, id: di1, name: "DI1", pin: {number: GPIO9}}    # AP0 = D6
+  - {platform: gpio, id: di2, name: "DI2", pin: {number: GPIO10}}    # AP1 = D7
+  - {platform: gpio, id: di3, name: "DI3", pin: {number: GPIO17}}   # AP2 = D8
+  - {platform: gpio, id: di4, name: "DI4", pin: {number: GPIO18}}   # AP3 = D9
 
 switch:
-  - {platform: gpio, name: "K1", pin: {number: GPIO4, inverted: true}, restore_mode: ALWAYS_OFF}   # AP4 = A3 via SB6, RS1
-  - {platform: gpio, name: "K2", pin: {number: GPIO3, inverted: true}, restore_mode: ALWAYS_OFF}   # AP5 = A2, RS2 (strapping pin)
-  - {platform: gpio, name: "K3", pin: {number: GPIO2, inverted: true}, restore_mode: ALWAYS_OFF}   # AP6 = A1, RS3
-  - {platform: gpio, name: "K4", pin: {number: GPIO5, inverted: true}, restore_mode: ALWAYS_OFF}   # AP7 = D2, RS4
+  - {platform: gpio, id: k1, name: "K1", pin: {number: GPIO4, inverted: true}, restore_mode: ALWAYS_OFF}   # AP4 = A3 via SB6, RS1
+  - {platform: gpio, id: k2, name: "K2", pin: {number: GPIO3, inverted: true}, restore_mode: ALWAYS_OFF}   # AP5 = A2, RS2 (strapping pin)
+  - {platform: gpio, id: k3, name: "K3", pin: {number: GPIO2, inverted: true}, restore_mode: ALWAYS_OFF}   # AP6 = A1, RS3
+  - {platform: gpio, id: k4, name: "K4", pin: {number: GPIO5, inverted: true}, restore_mode: ALWAYS_OFF}   # AP7 = D2, RS4

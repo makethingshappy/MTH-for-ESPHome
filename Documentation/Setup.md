@@ -6,6 +6,7 @@ It covers these carriers:
 - IoTsmart ESP32-S3 (v.1.02 and v.2.01)
 - IoTsmart XIAO v.1.02 with a Seeed XIAO ESP32-S3
 - IoTbase NANO v.3.06 with a Waveshare ESP32-S3-Nano
+- IoTbase PICO v.3.05 with a Raspberry Pi Pico W
 
 The configurations in this repository are tested with ESPHome 2026.10.1 (Python 3.13).
 
@@ -38,6 +39,7 @@ The configurations in this repository are tested with ESPHome 2026.10.1 (Python 
 | IoTsmart ESP32-S3 | Native USB port of the Waveshare ESP32-S3-Tiny, connected through the Tiny Adapter Board (USB Type-C) to the FPC connector. The adapter and cable are not included with the carrier. |
 | IoTsmart XIAO + XIAO ESP32-S3 | USB Type-C connector of the XIAO board. |
 | IoTbase NANO + Waveshare ESP32-S3-Nano | USB Type-C connector of the Waveshare board. |
+| IoTbase PICO + Raspberry Pi Pico W | Micro-USB connector of the Pico W. Use a cable with data lines; many micro-USB cables are charge-only. |
 
 - **IoTsmart XIAO only:** an external 2.4 GHz antenna with a U.FL (IPEX) plug. The XIAO ESP32-S3 has no on-board antenna,
   and the antenna is not part of the carrier or of the XIAO board (see [Module Notes](#9-module-notes)).
@@ -78,6 +80,11 @@ USB alone is fine for flashing and bench tests with light loads. Use the PWR con
 Use the USB Type-C connector of the Waveshare board for the first flash and for bench tests. For powering the carrier from an
 external supply, follow the IoTbase NANO documentation and the supply range given by Waveshare for the ESP32-S3-Nano.
 
+### IoTbase PICO + Raspberry Pi Pico W
+
+Use the micro-USB connector of the Pico W for the first flash and for bench tests. For powering the carrier from an
+external supply, follow the IoTbase PICO documentation and the Raspberry Pi documentation for the Pico W.
+
 ## 3. Install ESPHome
 
 Command line (a virtual environment is recommended):
@@ -104,18 +111,30 @@ The configs are grouped in one folder per carrier and SoM:
 | `IoTsmart_ESP32-S3` | IoTsmart ESP32-S3, v.1.02 (`...-esp32s3-v1-02-...`) and v.2.01 (`...-esp32s3-v2-01-...`) |
 | `IoTsmart_XIAO_XIAO-ESP32-S3` | IoTsmart XIAO v.1.02 + XIAO ESP32-S3 |
 | `IoTbase_NANO_Waveshare-ESP32-S3-NANO` | IoTbase NANO v.3.06 + Waveshare ESP32-S3-Nano |
+| `IoTbase_PICO_Raspberry-Pi-Pico-W` | IoTbase PICO v.3.05 + Raspberry Pi Pico W |
 
 File names follow the pattern
 
 ```
-iotextra-<module>-v<module version>-<carrier>-v<carrier version>-<gpio|i2c>.yaml
+iotextra-<module>-v<module version>-<carrier>-v<carrier version>-<SoM>-<gpio|i2c>.yaml
 ```
 
-The version numbers are the board revisions printed on your module and carrier. `gpio` configs drive the module through the
-HOST lines directly, `i2c` configs use an I2C chip on the module. IoTsmart ESP32-S3 v.1.02 and v.2.01 have the same HOST pinout,
-so their configs differ only in the names.
+The version numbers are the board revisions printed on your module and carrier. `<SoM>` names the board plugged into the
+carrier, because one carrier can take several boards:
 
-The device name in each config ends with a carrier tag, for example `mosfet2-iotsmart-s3`, `mosfet2-xiao-s3` or `mosfet2-nano-s3`.
+| SoM | Label in the file name |
+|---|---|
+| Seeed XIAO ESP32-S3 | `xiao-esp32s3` |
+| Waveshare ESP32-S3-Nano | `ws-esp32s3-nano` |
+| Raspberry Pi Pico W | `pico-w` |
+| IoTsmart ESP32-S3 (SoM soldered on the carrier) | no label |
+
+Example: `iotextra-mosfet2-v3-02-iotbase-nano-v3-06-ws-esp32s3-nano-gpio.yaml`.
+
+`gpio` configs drive the module through the HOST lines directly, `i2c` configs use an I2C chip on the module.
+IoTsmart ESP32-S3 v.1.02 and v.2.01 have the same HOST pinout, so their configs differ only in the names.
+
+The device name in each config ends with a carrier tag, for example `mosfet2-iotsmart-s3`, `mosfet2-xiao-s3`, `mosfet2-nano-s3` or `mosfet2-pico-w`.
 You can change it in your own copy.
 
 > **Do not rename the files.** Each config contains a `dashboard_import` URL that points to its own file name in this
@@ -160,6 +179,18 @@ If that does not help, put the chip into bootloader mode:
 
 Then run the command again.
 
+**IoTbase PICO + Raspberry Pi Pico W.** The first flash does not use a serial port. A Pico W with other firmware may not
+show up in the Device Manager at all; this is normal.
+
+1. Unplug the USB cable. Hold the **BOOTSEL** button on the Pico W, plug the cable in, then release the button.
+   A drive named **RPI-RP2** appears on the computer.
+2. Run `esphome run <your-config>.yaml`. If ESPHome offers the RPI-RP2 drive as an upload target, choose it.
+3. Otherwise copy the `firmware.uf2` file from the build folder (the build log shows the path) to the RPI-RP2 drive.
+   The Pico W restarts with the new firmware and the drive disappears. Windows may report a copy error at that moment;
+   the firmware is written anyway.
+
+Later updates go over Wi-Fi (see [step 8](#8-updates-over-the-air)).
+
 ## 7. Adopt in Home Assistant or the ESPHome Dashboard
 
 **Home Assistant.** The device is discovered automatically. Open *Settings → Devices & services*, find the discovered
@@ -195,6 +226,8 @@ replace your copy. Keep your own changes in your own copy of the file.
   The configs declare the pins with `inverted: true`, so *on* in ESPHome means *on* at the module. The configs set the outputs to **off** at start-up (`restore_mode: ALWAYS_OFF`).
 - **IoTextra Octal.** The config assumes solder jumper **SB2** is closed, which is the factory default: HOST line AP4 then drives relay RL1.
   If you have closed **SB1** instead, AP4 becomes the I/O expander interrupt and RL1 will not work.
+- **IoTextra Octal4.** The config assumes solder jumper **SB6** is closed, which is the factory default: HOST line AP4 then drives relay K1.
+  If you have closed **SB5** instead, AP4 becomes the I/O expander interrupt and K1 will not work.
 - **IoTextra Analog.** Each channel has a range setting in the `substitutions` block at the top of the file
   (gain, scale factor and unit). The comment above the block lists the values for each input range
   (0–10 V, 0–5 V, 0–0.5 V, 4–20 mA and so on). Set them to match the jumpers of your module.
@@ -205,9 +238,10 @@ replace your copy. Keep your own changes in your own copy of the file.
   | IoTsmart ESP32-S3 | GPIO16 | GPIO15 |
   | IoTsmart XIAO + XIAO ESP32-S3 | GPIO5 | GPIO6 |
   | IoTbase NANO + Waveshare ESP32-S3-Nano | GPIO11 | GPIO12 |
+  | IoTbase PICO + Raspberry Pi Pico W | GPIO20 | GPIO21 |
 
   On IoTsmart ESP32-S3 the carrier's own EEPROM answers on addresses 0x54–0x57 on the same bus.
-- **Carrier board definition.** Do not use a `board:` entry such as `esp32-s3-devkitc-1` for these carriers.
+- **Carrier board definition.** For the ESP32-S3 carriers, do not use a `board:` entry such as `esp32-s3-devkitc-1`.
   Use `variant: esp32s3` and the flash size of the SoM, as in the configs here:
 
   | Carrier | `flash_size` | PSRAM |
@@ -215,6 +249,8 @@ replace your copy. Keep your own changes in your own copy of the file.
   | IoTsmart ESP32-S3 | 4MB | `psram: mode: quad` |
   | IoTsmart XIAO + XIAO ESP32-S3 | 8MB | not used |
   | IoTbase NANO + Waveshare ESP32-S3-Nano | 16MB | not used |
+
+  IoTbase PICO + Raspberry Pi Pico W uses the RP2 platform instead: `rp2:` with `board: rpipicow`.
 
 - **IoTsmart XIAO: antenna.** The XIAO ESP32-S3 has only a U.FL connector for the antenna. Without an antenna the Wi-Fi signal is
   very weak (around −80 dBm and below) and the device may not connect reliably. The U.FL plug and socket are small and
@@ -234,6 +270,7 @@ replace your copy. Keep your own changes in your own copy of the file.
 | Problem | What to do |
 |---|---|
 | Serial port not listed or upload fails | Use another USB cable (some are charge-only) and another USB port. Put the chip in bootloader mode (see [step 6](#6-first-flash-over-usb)). |
+| Raspberry Pi Pico W: no port and no RPI-RP2 drive | Hold BOOTSEL while plugging in the cable (see [step 6](#6-first-flash-over-usb)). Check that the micro-USB cable carries data. |
 | ESPHome asks which option to use for uploading | Several targets were found. Enter the number of the serial port for a USB flash. |
 | Build fails on Windows with a user name that contains a space | Set the environment variables `ESPHOME_ESP_IDF_PREFIX` and `ESPHOME_DATA_DIR` to paths without spaces. |
 | Device does not join Wi-Fi | Check `secrets.yaml`. The network must be 2.4 GHz. On IoTsmart XIAO check that the antenna is fitted. Use the fallback access point (see step 7). |

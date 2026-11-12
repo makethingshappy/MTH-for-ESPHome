@@ -1,0 +1,48 @@
+# IoTextra Octal4 3.02 + IoTbase PICO 3.05 + Raspberry Pi Pico W — GPIO mode (HOST AP0..AP7)
+# Source: IoTbase/PICO/v.3.05/host-map.yaml (pico) + IoTextra-Digital/Octal4/v.3.02/host-map.yaml
+# Inputs DI1..DI4: ISO1211, active-high on the HOST line (input active = 1)
+# Relays K1..K4 (terminals RS1..RS4): active-low on the HOST line (relay on = 0)
+# Requires SB6 closed (HOST AP4 -> K1). With SB5 closed AP4 is TCA9534 INT: K1 will not work.
+esphome:
+  name: octal4-pico-w
+  project:
+    name: makethingshappy.iotextra-octal4-v3-02-iotbase-pico-v3-05-pico-w-gpio
+    version: "1.01"
+
+rp2:
+  board: rpipicow
+
+logger:
+api:
+ota:
+  - platform: esphome
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  ap: {}
+captive_portal:
+web_server:
+  port: 80
+
+dashboard_import:
+  package_import_url: github://makethingshappy/MTH-for-ESPHome/Configs/IoTbase_PICO_Raspberry-Pi-Pico-W/iotextra-octal4-v3-02-iotbase-pico-v3-05-pico-w-gpio.yaml@main
+  import_full_config: false
+
+# HOST I2C on IoTbase PICO: SDA = pin 26 = GP20, SCL = pin 27 = GP21 (RP2040 I2C0)
+i2c:
+  id: host_i2c
+  sda: GPIO20
+  scl: GPIO21
+  scan: true
+
+binary_sensor:
+  - {platform: gpio, id: di1, name: "DI1", pin: {number: GPIO10}}    # AP0 = pin 14
+  - {platform: gpio, id: di2, name: "DI2", pin: {number: GPIO11}}    # AP1 = pin 15
+  - {platform: gpio, id: di3, name: "DI3", pin: {number: GPIO12}}   # AP2 = pin 16
+  - {platform: gpio, id: di4, name: "DI4", pin: {number: GPIO13}}   # AP3 = pin 17
+
+switch:
+  - {platform: gpio, id: k1, name: "K1", pin: {number: GPIO14, inverted: true}, restore_mode: ALWAYS_OFF}   # AP4 = pin 19 via SB6, RS1
+  - {platform: gpio, id: k2, name: "K2", pin: {number: GPIO15, inverted: true}, restore_mode: ALWAYS_OFF}   # AP5 = pin 20, RS2
+  - {platform: gpio, id: k3, name: "K3", pin: {number: GPIO18, inverted: true}, restore_mode: ALWAYS_OFF}   # AP6 = pin 24, RS3
+  - {platform: gpio, id: k4, name: "K4", pin: {number: GPIO19, inverted: true}, restore_mode: ALWAYS_OFF}   # AP7 = pin 25, RS4

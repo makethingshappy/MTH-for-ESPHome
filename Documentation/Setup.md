@@ -4,7 +4,7 @@ This guide takes an IoTextra module on an IoTsmart or IoTbase carrier from the b
 It covers these carriers:
 
 - IoTsmart ESP32-S3 (v.1.02 and v.2.01)
-- IoTsmart XIAO v.1.02 with a Seeed XIAO ESP32-S3
+- IoTsmart XIAO (v.1.02 and v.2.01) with a Seeed XIAO ESP32-S3
 - IoTbase NANO v.3.06 with a Waveshare ESP32-S3-Nano
 - IoTbase PICO v.3.05 with a Raspberry Pi Pico W
 
@@ -109,7 +109,7 @@ The configs are grouped in one folder per carrier and SoM:
 | Folder in `Configs/` | Carrier |
 |---|---|
 | `IoTsmart_ESP32-S3` | IoTsmart ESP32-S3, v.1.02 (`...-esp32s3-v1-02-...`) and v.2.01 (`...-esp32s3-v2-01-...`) |
-| `IoTsmart_XIAO_XIAO-ESP32-S3` | IoTsmart XIAO v.1.02 + XIAO ESP32-S3 |
+| `IoTsmart_XIAO_XIAO-ESP32-S3` | IoTsmart XIAO v.1.02 (`...-xiao-v1-02-...`) and v.2.01 (`...-xiao-v2-01-...`) + XIAO ESP32-S3 |
 | `IoTbase_NANO_Waveshare-ESP32-S3-NANO` | IoTbase NANO v.3.06 + Waveshare ESP32-S3-Nano |
 | `IoTbase_PICO_Raspberry-Pi-Pico-W` | IoTbase PICO v.3.05 + Raspberry Pi Pico W |
 
@@ -132,7 +132,7 @@ carrier, because one carrier can take several boards:
 Example: `iotextra-mosfet2-v3-02-iotbase-nano-v3-06-ws-esp32s3-nano-gpio.yaml`.
 
 `gpio` configs drive the module through the HOST lines directly, `i2c` configs use an I2C chip on the module.
-IoTsmart ESP32-S3 v.1.02 and v.2.01 have the same HOST pinout, so their configs differ only in the names.
+IoTsmart ESP32-S3 v.1.02 and v.2.01 have the same HOST pinout, so their configs differ only in the names. The same holds for IoTsmart XIAO v.1.02 and v.2.01.
 
 The device name in each config ends with a carrier tag, for example `mosfet2-iotsmart-s3`, `mosfet2-xiao-s3`, `mosfet2-nano-s3` or `mosfet2-pico-w`.
 You can change it in your own copy.

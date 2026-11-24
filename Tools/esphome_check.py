@@ -7,7 +7,8 @@ Usage:
   esphome_check.py MODULE_HOST_MAP CARRIER_HOST_MAP CONFIG.yaml [--board NAME] [--table]
 
   --board NAME  for carriers whose host-map has a `boards:` section (IoTbase NANO,
-                IoTbase XIAO): the plug-in board to check against, e.g. esp32-s3-nano.
+                IoTsmart XIAO): the plug-in board to check against, e.g. esp32-s3-nano
+                or xiao-esp32s3.
 
 Checks (exit code 1 on any ERROR):
   - every module channel with a HOST line exists in the config under the same name
